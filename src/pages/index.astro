@@ -1,0 +1,35 @@
+---
+---
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>WebSocket client</title>
+  </head>
+  <body>
+	<p>Connection Status: <span id="conStatus"></span></p>
+
+	<script>
+		const conStatus = document.getElementById('conStatus')
+
+		// Creating a new WebSocket instance
+		const socket = new WebSocket('ws://localhost:3000/');
+
+		// Connection opened
+		socket.addEventListener('open', (event) => {
+			socket.send('Hi im Philipp')
+		})
+
+		// Listen for messages
+		socket.addEventListener('message', (event) => {
+			console.log(event.data);
+		});
+
+		// Connection closed
+		socket.addEventListener('close', (event) => {
+			conStatus.innerHTML = 'closed'
+		});
+	</script>
+  </body>
+</html>
