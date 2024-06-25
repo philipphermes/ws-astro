@@ -1,3 +1,5 @@
+const messages = []
+
 const server = Bun.serve<{}>({
     fetch(req, server) {
         server.upgrade(req, {
@@ -10,13 +12,20 @@ const server = Bun.serve<{}>({
       },
     websocket: {
       open(ws) {
-        ws.send('Hi how are you?');
+        ws.send(JSON.stringify(messages));
       },
       message(ws, message) {
-        ws.send(message);
+        if (message == "ping") {
+          ws.send("pong")
+          return
+        }
+
+        messages.push(JSON.parse(message))
+
+        ws.send(JSON.stringify(messages));
       },
       close(ws) {
-        ws.send('Bye bye!')
+        ws.send('connection closed!')
       },
     },
   });
