@@ -11,17 +11,19 @@ const server = Bun.serve<{}>({
         return undefined;
       },
     websocket: {
+      sendPings: true,
       open(ws) {
         ws.send(JSON.stringify(messages));
       },
       message(ws, message) {
-        if (message == "ping") {
-          ws.send("pong")
+        const ms = JSON.parse(message)
+
+        if (ms.user_id == "client-ping") {
+          ws.send(JSON.stringify(messages))
           return
         }
 
-        messages.push(JSON.parse(message))
-
+        messages.push(ms)
         ws.send(JSON.stringify(messages));
       },
       close(ws) {

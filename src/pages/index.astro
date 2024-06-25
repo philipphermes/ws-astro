@@ -19,7 +19,7 @@ if (cookieUserId?.value === undefined) {
 		<p>User ID: <span>{userId}</span></p>
 	</section>
 
-	<dialog id="chat" class="grid grid-cols-2 items-start w-full h-2/3 bg-base-200"></dialog>
+	<dialog id="chat" class="grid grid-cols-2 items-start w-full h-auto bg-base-200"></dialog>
 
 	<section class="fixed bottom-0 left-0 w-full">
 		<input id="userId" type="hidden" value=`${userId}` />
@@ -56,10 +56,10 @@ if (cookieUserId?.value === undefined) {
 				const divRight = document.createElement('div')
 
 				if (message.user_id === document.getElementById("userId").value) {
-					divRight.classList.add('chat', 'chat-end')
+					divRight.classList.add('chat', 'chat-end', 'h-fit')
 					divRight.innerHTML = `<div class="chat-bubble">${message.message}</div>`
 				} else {
-					divLeft.classList.add('chat', 'chat-start')
+					divLeft.classList.add('chat', 'chat-start', 'h-fit')
 					divLeft.innerHTML = `<div class="chat-bubble">${message.message}</div>`
 				}
 
@@ -84,7 +84,10 @@ if (cookieUserId?.value === undefined) {
 		});
 
 		setInterval(() => {
-			socket.send('ping')
-		}, 5000)
+			socket.send(JSON.stringify({
+					message: '',
+					user_id: 'client-ping',
+				}))
+		}, 1200)
 	</script>
 </Main>
