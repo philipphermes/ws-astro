@@ -1,6 +1,4 @@
 ---
-export const prerender = false;
-
 import Main from "../layouts/main.astro";
 import { v4 as uuidv4 } from "uuid";
 
@@ -12,82 +10,69 @@ if (cookieUserId?.value === undefined) {
 	Astro.cookies.set("user_id", userId);
 }
 ---
-
 <Main>
-	<section id="debug">
-		<p>Connection Status: <span id="conStatus"></span></p>
-		<p>User ID: <span>{userId}</span></p>
-	</section>
+	<dialog id="chat" class="block w-full h-auto bg-base-200 p-4 pb-20 min-h-full">
+	</dialog>
 
-	<dialog id="chat" class="grid grid-cols-2 items-start w-full h-auto bg-base-200"></dialog>
-
-	<section class="fixed bottom-0 left-0 w-full">
+	<section class="fixed bottom-0 left-0 w-full h-20 flex justify-between items-center">
 		<input id="userId" type="hidden" value=`${userId}` />
-		<textarea
+		<input
 			id="messageInput"
 			placeholder="Your Message..."
-			class="textarea textarea-bordered textarea-lg w-full resize-none bg-base-300"
-		></textarea>
+			type="text"
+			class="input w-full h-full rounded-none"
+		/>
 		<button
 			id="sendMessage"
-			class="absolute btn btn-lg btn-primary w-fit right-0 bottom-0 mb-2 mr-1"
+			class="btn btn-lg btn-primary right-0 bottom-0 h-full rounded-none w-40"
 			>Send</button
 		>
 	</section>
 
-	<script>
+	<script is:inline>
+		const chat = document.getElementById('chat')
+		const input = document.getElementById("messageInput")
+		const userId = document.getElementById('userId')
+		const btn = document.getElementById("sendMessage")
 		const socket = new WebSocket("ws://localhost:3000/");
 
 		socket.addEventListener("open", (event) => {
-			document.getElementById("conStatus").innerHTML = "Open";
+			console.log('connected');
 		});
 
 		socket.addEventListener("message", (event) => {
-			if (event.data === 'pong') {
-				return
-			}
+			chat.innerHTML = ""
+			JSON.parse(event.data).forEach(message => {
+				const chatWrapper = document.createElement('div')
+				const chatContent = document.createElement('div')
+				chatContent.textContent = message.message
+				chatWrapper.append(chatContent)
 
-			document.getElementById('chat').innerHTML = ""
-
-			const messages = JSON.parse(event.data)
-			console.log(messages);
-			messages.forEach(message => {
-				const divLeft = document.createElement('div')
-				const divRight = document.createElement('div')
-
-				if (message.user_id === document.getElementById("userId").value) {
-					divRight.classList.add('chat', 'chat-end', 'h-fit')
-					divRight.innerHTML = `<div class="chat-bubble">${message.message}</div>`
+				if (message.user_id === userId.value) {
+					chatWrapper.classList.add('chat', 'chat-end', 'h-fit')
+					chatContent.classList.add('chat-bubble', 'chat-bubble-primary')
 				} else {
-					divLeft.classList.add('chat', 'chat-start', 'h-fit')
-					divLeft.innerHTML = `<div class="chat-bubble">${message.message}</div>`
+					chatWrapper.classList.add('chat', 'chat-start', 'h-fit')
+					chatContent.classList.add('chat-bubble', 'chat-bubble-secondary')
 				}
 
-				document.getElementById('chat')?.append(divLeft)
-				document.getElementById('chat')?.append(divRight)
+				chat.append(chatWrapper)
 			});
 		});
 
-		socket.addEventListener("close", (event) => {
-			document.getElementById("conStatus").innerHTML = "Closed";
+		socket.addEventListener('close', (event) => {
+			console.log('disconnected')
 		});
 
-		document.getElementById("sendMessage").addEventListener("click", () => {
+		btn.addEventListener('click', () => {
 			socket.send(
 				JSON.stringify({
-					message: document.getElementById("messageInput").value,
-					user_id: document.getElementById("userId").value,
+					message: input.value,
+					user_id: userId.value,
 				}),
 			);
 
-			document.getElementById("messageInput").value = ""
+			input.value = ''
 		});
-
-		setInterval(() => {
-			socket.send(JSON.stringify({
-					message: '',
-					user_id: 'client-ping',
-				}))
-		}, 1200)
 	</script>
 </Main>
