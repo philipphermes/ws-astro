@@ -1,0 +1,80 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Input from '../components/forms/Input.astro';
+import Button from '../components/forms/Button.astro';
+import ButtonLink from '../components/forms/ButtonLink.astro';
+
+const metaTitle = 'Konto erstellen';
+
+const user = Astro.locals.user;
+if (user) {
+    return Astro.redirect("/");
+}
+
+---
+
+<Layout title={metaTitle}>
+    <div class="flex flex-col md:pt-12 pt-4 justify-center items-center mb-20">
+        <h1 class="text-center uppercase mx-auto">
+            Konto erstellen
+        </h1>
+
+        <div class="mt-1 sm:mx-auto sm:w-full sm:max-w-sm px-8 sm:px-0">
+          >
+            <p id="form-error" class="text-red-500"></p>
+
+            <form class="space-y-6 mt-3" action="/api/user" method="POST">
+                <Input name="email" label="E-Mail" type="email" placeholder="Deine E-mail-Adresse"/>
+                <Input name="password" label="Passwort" type="password" placeholder="Vergib ein Passwort"/>
+                <Input name="rePassword" label="Passwort wiederholen" type="password" placeholder="Gib dein neues Passwort noch einmal ein."/>
+
+                <Input name="firstName" label="Name" placeholder="Deine Name"/>
+                <Input name="lastName" label="Nachname" placeholder="Dein Nachname"/>
+
+                <Button name="Registrieren" />
+            </form>
+
+            <h2 class="text-center uppercase mx-auto mt-20">
+                Du hast schon ein Konto?
+            </h2>
+            <div class="mt-10">
+                <ButtonLink href="/login" name="Zurück zur Anmeldung" />
+            </div>
+        </div>
+    </div>
+
+</Layout>
+
+<script>
+    const errorMessageElement = document.getElementById("form-error")!;
+
+    document.querySelector('form')?.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        errorMessageElement.innerText = "";
+        const formElement = e.target as HTMLFormElement;
+
+        const password = formElement.querySelector('[name="password"]').value;
+        const rePassword = formElement.querySelector('[name="rePassword"]').value;
+
+        if (password !== rePassword) {
+            errorMessageElement.innerText = "Die Passwörter stimmen nicht überein.";
+            errorMessageElement.scrollIntoView({behavior: 'smooth', block: 'center'});
+            return;
+        }
+
+        const response = await fetch(
+            formElement.action,
+            {
+                method: formElement.method,
+                body: new FormData(formElement)
+            } as RequestInit
+        );
+
+        if (response.redirected) {
+            window.location.assign(response.url);
+        } else {
+            errorMessageElement.innerText = (await response.json()).error;
+            errorMessageElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+    });
+</script>

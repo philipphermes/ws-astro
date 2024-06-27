@@ -1,5 +1,5 @@
 {
-  "name": "ws-astro-chat",
+  "name": "planning-poker-astro",
   "type": "module",
   "version": "0.0.1",
   "scripts": {
@@ -7,19 +7,32 @@
     "start": "astro dev",
     "build": "astro check && astro build",
     "preview": "astro preview",
-    "astro": "astro"
+    "astro": "astro",
+    "generate-migration": "bunx drizzle-kit generate",
+    "migrate": "bun run ./db/migrate.ts",
+    "init": "$npm_execpath run generate-migration && $npm_execpath run migrate"
   },
   "dependencies": {
     "@astrojs/check": "^0.7.0",
+    "@astrojs/node": "^8.3.2",
     "@astrojs/tailwind": "^5.1.0",
-    "astro": "^4.11.1",
+    "@lucia-auth/adapter-drizzle": "^1.0.7",
+    "astro": "^4.11.3",
+    "drizzle-orm": "^0.31.2",
+    "lucia": "^3.2.0",
+    "oslo": "^1.2.1",
     "tailwindcss": "^3.4.4",
     "typescript": "^5.5.2",
     "uuid": "^10.0.0"
   },
   "devDependencies": {
-    "@types/bun": "^1.1.5",
+    "@types/bun": "^1.1.6",
     "@types/uuid": "^10.0.0",
-    "daisyui": "^4.12.8"
+    "better-sqlite3": "^11.0.0",
+    "daisyui": "^4.12.10",
+    "drizzle-kit": "^0.22.7"
+  },
+  "peerDependencies": {
+    "typescript": "^5.5.2"
   }
 }

@@ -25,3 +25,6 @@ pnpm-debug.log*
 
 # vs code
 .vscode/
+
+db/migrations
+db/database.db

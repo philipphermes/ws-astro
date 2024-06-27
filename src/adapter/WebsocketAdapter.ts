@@ -20,11 +20,12 @@ const server = Bun.serve<{}>({
         message(ws, message: string) {
             const ms = JSON.parse(message)
             messages.push(ms)
-            
+
             ws.send(JSON.stringify(messages))
             ws.publish('messages', JSON.stringify(messages))
         },
         close(ws) {
+            console.log(ws);
             ws.unsubscribe('messages')
             console.log('Connection closed')
         },
