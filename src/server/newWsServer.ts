@@ -1,11 +1,9 @@
 import type { SSRManifest } from "astro";
-import type { Server, WebSocketHandler } from "bun";
-import { App } from "astro/app";
 
 const messages: { message: string, user_id: string }[] = []
 let server = undefined
 
-export function start(manifest: SSRManifest, options) {
+export function start(manifest: SSRManifest) {
     server = Bun.serve<{}>({
         fetch(req, server) {
             if (server.upgrade(req)) {
@@ -34,29 +32,33 @@ export function start(manifest: SSRManifest, options) {
     });
 }
 
-export function createExports(manifest: SSRManifest, options) {
-    return {
-        async start() {
-            return start(manifest, options);
-        },
-        running() {
-            return server !== undefined;
-        },
-        stop() {
-            if (server) {
-                server.stop();
-                server = undefined;
+export function createExports(manifest) {
+    const handler = (event, context) => {
+        addEventListener('fetch', event => {
+            if (server.upgrade(event.request)) {
+                return;
             }
-        },
-        handle: handler
-    }
-}
+            return new Response("Upgrade failed", { status: 500 });
+        });
 
-function handler() {
-    return async (req: Request) => {
-        if (server.upgrade(req)) {
-            return; // do not return a Response
-        }
-        return new Response("Upgrade failed", { status: 500 });
+        server.websocket.addEventListener('open', (ws) => {
+            ws.subscribe('messages');
+            server.publish('messages', JSON.stringify(messages));
+        })
+
+        server.websocket.addEventListener('message', (ws, message) => {
+            const ms = JSON.parse(message)
+            messages.push(ms)
+
+            ws.send(JSON.stringify(messages))
+            server.publish('messages', JSON.stringify(messages));
+        })
+
+        server.websocket.addEventListener('open', (ws) => {
+            ws.unsubscribe('messages')
+            console.log('Connection closed')
+        })
     };
+
+    return { handler: handler };
 }

@@ -64,10 +64,6 @@ if (cookieUserId?.value === undefined) {
 			console.log('disconnected')
 		});
 
-		socket.addEventListener('error', e => {
-			console.log(e);
-		})
-
 		btn.addEventListener('click', () => {
 			socket.send(
 				JSON.stringify({
